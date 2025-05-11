@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shano Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-[#1e88e5] h-screen font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-80 bg-white/90 flex flex-col border-r border-[#1e88e5]/30">
+            <!-- Logo Branding -->
+            <div class="flex flex-col items-center justify-center h-20 py-2 mt-4 border-b border-gray-200">
+                <div class="w-16 h-16 flex items-center justify-center rounded-full bg-[#1e88e5] shadow">
+                    <i class="fas fa-comments text-white text-3xl py-4"></i>
+                </div>
+                <span class="mt-2 font-bold text-lg text-[#1e88e5] tracking-wide">Shano Chat</span>
+            </div>
+            <!-- Logo/Profile -->
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff" class="w-10 h-10 rounded-full">
+                    <span class="font-semibold text-gray-800">You</span>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-circle-notch text-gray-500"></i></button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-comment-alt text-gray-500"></i></button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-ellipsis-v text-gray-500"></i></button>
+                </div>
+            </div>
+            <!-- Search -->
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <div class="relative">
+                    <input type="text" placeholder="Search or start new chat" class="w-full pl-10 pr-3 py-2 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+            </div>
+            <!-- Chat List -->
+            <div class="flex-1 overflow-y-auto bg-white/90">
+                <div class="divide-y divide-gray-100">
+                    <!-- Chat Item Example -->
+                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer group">
+                        <div class="relative mr-4">
+                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=random" alt="Avatar" class="w-12 h-12 rounded-full">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-gray-900 font-semibold truncate">John Doe</h4>
+                                <span class="text-xs text-gray-400">10:30 AM</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm text-gray-600">
+                                <p class="truncate">Hey, how are you?</p>
+                                <span class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full ml-2">2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer group">
+                        <div class="relative mr-4">
+                            <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=random" alt="Avatar" class="w-12 h-12 rounded-full">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 border-2 border-white rounded-full"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-gray-900 font-semibold truncate">Sarah Smith</h4>
+                                <span class="text-xs text-gray-400">9:45 AM</span>
+                            </div>
+                            <p class="text-sm text-gray-600 truncate">Can we meet tomorrow?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Chat Area -->
+        <main class="flex-1 flex flex-col bg-[#e3f2fd]">
+            <!-- Chat Header -->
+            <header class="bg-[#1e88e5] px-6 py-3 flex items-center justify-between border-b border-[#1976d2] shadow-sm text-white">
+                <div class="flex items-center gap-4">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=random" alt="avatar" class="w-10 h-10 rounded-full">
+                    <div>
+                        <h2 class="font-semibold text-white">John Doe</h2>
+                        <p class="text-xs text-blue-100">online</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-search text-white text-lg"></i></button>
+                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-phone-alt text-white text-lg"></i></button>
+                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-video text-white text-lg"></i></button>
+                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-info-circle text-white text-lg"></i></button>
+                </div>
+            </header>
+            <!-- Messages Area -->
+            <section class="flex-1 overflow-y-auto px-8 py-6 space-y-4 bg-[url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png')] bg-[#e3f2fd] bg-blend-lighten">
+                <!-- Example messages -->
+                <div class="flex flex-col items-start">
+                    <div class="bg-white/90 text-[#1565c0] rounded-lg px-4 py-2 shadow mb-1 max-w-lg">Hey, how are you?</div>
+                    <span class="text-xs text-gray-400 ml-2">10:30 AM</span>
+                </div>
+                <div class="flex flex-col items-end">
+                    <div class="bg-[#1e88e5] text-white rounded-lg px-4 py-2 shadow mb-1 max-w-lg">I'm good, thanks! And you?</div>
+                    <span class="text-xs text-gray-400 mr-2">10:31 AM</span>
+                </div>
+            </section>
+            <!-- Message Input -->
+            <footer class="bg-white/90 px-6 py-4 border-t border-[#1e88e5]/20">
+                <div class="flex items-center gap-4">
+                    <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="far fa-smile text-2xl"></i></button>
+                    <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="fas fa-paperclip text-2xl"></i></button>
+                    <input type="text" placeholder="Type a message" class="flex-1 bg-blue-50 py-2 px-4 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1e88e5] text-blue-900 placeholder-blue-400">
+                    <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="fas fa-microphone text-2xl"></i></button>
+                </div>
+            </footer>
+        </main>
+    </div>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
