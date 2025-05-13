@@ -19,13 +19,7 @@ import { getAuth, onAuthStateChanged,createUserWithEmailAndPassword,signInWithEm
 // Your web app's Firebase configuration
 const firebaseConfig = {
     // TODO: Replace with your Firebase config
-    apiKey: "AIzaSyCvq7E6LD09oYDpijFX3mp05NxDJbbljr8",
-    authDomain: "shano-chat.firebaseapp.com",
-    projectId: "shano-chat",
-    storageBucket: "shano-chat.firebasestorage.app",
-    messagingSenderId: "386733044613",
-    appId: "1:386733044613:web:f4ac3be2cbff53c89bcaec",
-    measurementId: "G-W52R1GECWM"
+    
 };
 
 // Initialize Firebase
