@@ -1,25 +1,31 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, 
-    addDoc, 
-    query, 
-    orderBy, 
-    onSnapshot,
-    serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+  doc,
+  getFirestore,
+  collection,
+  serverTimestamp,   // ✅ Keep this one only
+  addDoc,
+  orderBy,
+  onSnapshot,
+  setDoc,getDoc,updateDoc,where,query,getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
 import { getStorage, ref, 
     uploadBytes, 
     getDownloadURL  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,GoogleAuthProvider ,signInWithPopup,signOut} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
     // TODO: Replace with your Firebase config
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyCvq7E6LD09oYDpijFX3mp05NxDJbbljr8",
+    authDomain: "shano-chat.firebaseapp.com",
+    projectId: "shano-chat",
+    storageBucket: "shano-chat.firebasestorage.app",
+    messagingSenderId: "386733044613",
+    appId: "1:386733044613:web:f4ac3be2cbff53c89bcaec",
+    measurementId: "G-W52R1GECWM"
 };
 
 // Initialize Firebase
@@ -27,5 +33,30 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-export { db, storage, auth, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, uploadBytes, getDownloadURL }; 
+export {
+  doc,
+  setDoc,
+  db,
+  storage,
+  auth,
+  collection,
+  addDoc,
+  orderBy,
+  onSnapshot,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
+  where,
+  query,
+  getDocs,
+  uploadBytes,
+  getDownloadURL,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  googleProvider,
+  signInWithPopup,
+signOut
+};

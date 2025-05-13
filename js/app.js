@@ -1,336 +1,156 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Create splash screen
-    const splashScreen = document.createElement('div');
-    splashScreen.className = 'fixed inset-0 bg-[#1e88e5] flex items-center justify-center z-50';
-    splashScreen.innerHTML = `
-        <div class="text-center">
-            <div class="logo-container mb-4">
-                <i class="fas fa-comments text-white text-6xl"></i>
-            </div>
-            <h1 class="text-white text-2xl font-bold">Shano Chat</h1>
-        </div>
-    `;
-    document.body.appendChild(splashScreen);
+import { auth, onAuthStateChanged, signOut, getDoc, doc, db, updateDoc,where ,getDocs,query,collection} from "./firebase-config.js";
 
-    // Create timeline for all animations
-    const tl = gsap.timeline();
+export const checkLogin = () => {
+  onAuthStateChanged(auth, (user) => {
+    const isLoggedIn = JSON.parse(localStorage.getItem("login"));
 
-    // Splash screen animation
-    tl.to('.logo-container', {
-        duration: 1,
-        scale: 1.2,
-        rotation: 360,
-        ease: 'back.out(1.7)'
-    })
-    .to('.logo-container', {
-        duration: 0.5,
-        scale: 1,
-        ease: 'power2.inOut'
-    })
-    .to(splashScreen, {
-        duration: 0.5,
-        opacity: 0,
-        onComplete: () => {
-            splashScreen.remove();
-            // Start main animations after splash screen
-            startMainAnimations();
+    if (user && isLoggedIn) {
+      if (window.location.pathname !== "/index.html") {
+        window.location.href = "index.html";
+      } else {
+        console.log("User is logged in and on home page");
+        setProfile(); // ✅ Safe to call here
+      }
+    } else {
+      if (window.location.pathname !== "/auth.html") {
+        window.location.href = "auth.html";
+      } else {
+        console.log("User is not logged in and is on login/signup page");
+      }
+    }
+  });
+};
+
+const logout = () => {
+  const logoutBtn = document.getElementById("logoutBtn");
+  logoutBtn?.addEventListener("click", async () => {
+    await signOut(auth);
+    localStorage.removeItem("login");
+    window.location.href = "auth.html";
+  });
+};
+
+const setProfile = async (updatedName = null, updatedImage = null) => {
+  const user = auth.currentUser;
+  if (!user) {
+    console.log("User not logged in");
+    return;
+  }
+
+  const docRef = doc(db, "users", user.uid);
+
+  // 1️⃣ If update values are provided → update Firestore
+  if (updatedName || updatedImage) {
+    const updates = {};
+    if (updatedName) updates.name = updatedName;
+    if (updatedImage) updates.image = updatedImage;
+
+    try {
+      await updateDoc(docRef, updates);
+      console.log("Profile updated successfully!");
+    } catch (err) {
+      console.error("Error updating profile:", err);
+    }
+  }
+
+  // 2️⃣ Always get and display updated data
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      document.getElementById("profileNameDisplay").innerText = `${data.name.trim()}...` || "You";
+      document.getElementById("profileImageDisplay").src =
+        data.image || `https://ui-avatars.com/api/?name=${data.name || "You"}&background=0D8ABC&color=fff`;
+      document.getElementById("NumberOfUser").innerHTML = data.phoneNumber;
+    } else {
+      console.warn("User document does not exist");
+    }
+  } catch (err) {
+    console.error("Error fetching profile data:", err);
+  }
+};
+
+const displayChatlistItem = () => {
+  const chatlist = document.getElementById("chat-list");
+  const searchInputOfChat = document.getElementById("searchChat");
+
+  searchInputOfChat.addEventListener("keyup", async () => {
+    const searchValue = searchInputOfChat.value.toLowerCase().trim();
+    chatlist.innerHTML = "";
+
+    if (!searchValue) return;
+
+    const usersRef = collection(db, "users");
+
+    try {
+      const phoneQuery = query(usersRef, where("phoneNumber", "==", searchValue));
+      const phoneSnapshot = await getDocs(phoneQuery);
+
+      const nameQuery = query(
+        usersRef,
+        where("name", ">=", searchValue),
+        where("name", "<=", searchValue + "\uf8ff")
+      );
+      const nameSnapshot = await getDocs(nameQuery);
+
+      const results = new Set();
+
+      phoneSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (!results.has(docSnap.id)) {
+          results.add(docSnap.id);
+          const chatItem = createChatItem(data.name, data.phoneNumber, data.lastMessage, data.timestamp);
+          chatlist.appendChild(chatItem);
         }
-    });
+      });
 
-    function startMainAnimations() {
-        // Sidebar animation
-        gsap.from('.w-80', {
-            duration: 0.5,
-            x: -100,
-            opacity: 0,
-            ease: 'power2.out'
-        });
-
-        // Main chat area animation
-        gsap.from('.flex-1', {
-            duration: 0.5,
-            x: 100,
-            opacity: 0,
-            ease: 'power2.out',
-            delay: 0.2
-        });
-
-        // Chat items stagger animation
-        gsap.from('.chat-item', {
-            duration: 0.3,
-            y: 20,
-            opacity: 0,
-            stagger: 0.1,
-            ease: 'back.out(1.7)',
-            delay: 0.4
-        });
-
-        // Header elements animation
-        gsap.from('.bg-[#1e88e5] > *', {
-            duration: 0.4,
-            y: -20,
-            opacity: 0,
-            stagger: 0.1,
-            ease: 'power2.out',
-            delay: 0.6
-        });
-
-        // Input area animation
-        gsap.from('.bg-blue-50', {
-            duration: 0.4,
-            y: 20,
-            opacity: 0,
-            ease: 'power2.out',
-            delay: 0.8
-        });
-    }
-
-    // UI Management Functions
-    function initializeUI() {
-        setupChatItems();
-        setupMessageInput();
-        setupButtons();
-        setupMobileMenu();
-        setupSearchBar();
-    }
-
-    function setupChatItems() {
-        document.querySelectorAll('.chat-item').forEach(item => {
-            // Hover animation
-            item.addEventListener('mouseenter', () => {
-                gsap.to(item, {
-                    duration: 0.2,
-                    scale: 1.02,
-                    ease: 'power2.out'
-                });
-            });
-
-            item.addEventListener('mouseleave', () => {
-                gsap.to(item, {
-                    duration: 0.2,
-                    scale: 1,
-                    ease: 'power2.in'
-                });
-            });
-
-            // Click animation and active state
-            item.addEventListener('click', () => {
-                // Remove active class from all items
-                document.querySelectorAll('.chat-item').forEach(i => {
-                    i.classList.remove('active', 'bg-blue-100');
-                    gsap.to(i, {
-                        duration: 0.2,
-                        scale: 1,
-                        ease: 'power2.in'
-                    });
-                });
-
-                // Add active class to clicked item
-                item.classList.add('active', 'bg-blue-100');
-                gsap.to(item, {
-                    duration: 0.2,
-                    scale: 1.02,
-                    ease: 'power2.out'
-                });
-
-                // Update chat header
-                updateChatHeader(item);
-            });
-        });
-    }
-
-    function setupMessageInput() {
-        const messageInput = document.querySelector('input[type="text"]');
-        if (messageInput) {
-            // Focus animation
-            messageInput.addEventListener('focus', () => {
-                gsap.to(messageInput, {
-                    duration: 0.2,
-                    scale: 1.02,
-                    ease: 'power2.out'
-                });
-            });
-
-            messageInput.addEventListener('blur', () => {
-                gsap.to(messageInput, {
-                    duration: 0.2,
-                    scale: 1,
-                    ease: 'power2.in'
-                });
-            });
-
-            // Enter key handling
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    const text = messageInput.value.trim();
-                    if (text) {
-                        // Add message sending animation
-                        gsap.to(messageInput, {
-                            duration: 0.1,
-                            scale: 0.98,
-                            ease: 'power2.in',
-                            onComplete: () => {
-                                gsap.to(messageInput, {
-                                    duration: 0.1,
-                                    scale: 1,
-                                    ease: 'power2.out'
-                                });
-                            }
-                        });
-                        // Add your message sending logic here
-                    }
-                }
-            });
+      nameSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (!results.has(docSnap.id)) {
+          results.add(docSnap.id);
+          const chatItem = createChatItem(data.name, data.phoneNumber, data.lastMessage, data.timestamp);
+          chatlist.appendChild(chatItem);
         }
+      });
+
+      if (results.size === 0) {
+        chatlist.innerHTML = "<p class='text-gray-500 px-4 py-2'>No users found.</p>";
+      }
+
+    } catch (err) {
+      console.error("❌ Error searching users:", err);
     }
+  });
+};
 
-    function setupButtons() {
-        document.querySelectorAll('button').forEach(button => {
-            // Hover animation
-            button.addEventListener('mouseenter', () => {
-                gsap.to(button, {
-                    duration: 0.2,
-                    scale: 1.1,
-                    ease: 'power2.out'
-                });
-            });
 
-            button.addEventListener('mouseleave', () => {
-                gsap.to(button, {
-                    duration: 0.2,
-                    scale: 1,
-                    ease: 'power2.in'
-                });
-            });
+// Function to create a chat item element
+const createChatItem = (name, phoneNumber, lastMessage, timestamp) => {
+  const chatItem = document.createElement("div");
+  chatItem.classList.add("chat-item", "flex", "items-center", "px-4", "py-3", "hover:bg-gray-50", "cursor-pointer", "group");
 
-            // Click animation
-            button.addEventListener('click', () => {
-                gsap.to(button, {
-                    duration: 0.1,
-                    scale: 0.95,
-                    ease: 'power2.in',
-                    onComplete: () => {
-                        gsap.to(button, {
-                            duration: 0.1,
-                            scale: 1,
-                            ease: 'power2.out'
-                        });
-                    }
-                });
-            });
-        });
-    }
+  chatItem.innerHTML = `
+    <div class="relative mr-4">
+      <img src="https://ui-avatars.com/api/?name=${name.replace(" ", "+")}&background=random" alt="Avatar" class="w-12 h-12 rounded-full">
+      <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex justify-between items-center">
+        <h4 class="text-gray-900 font-semibold truncate">${name}</h4>
+        <span class="text-xs text-gray-400">${timestamp}</span>
+      </div>
+      <div class="flex justify-between items-center text-sm text-gray-600">
+        <p class="truncate">${lastMessage}</p>
+      </div>
+    </div>
+  `;
 
-    function setupMobileMenu() {
-        const mobileMenuButton = document.createElement('button');
-        mobileMenuButton.innerHTML = '<i class="fas fa-bars"></i>';
-        mobileMenuButton.className = 'lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#1e88e5] text-white rounded-lg shadow-lg hover:bg-blue-600 transition-colors';
-        document.body.appendChild(mobileMenuButton);
+  return chatItem;
+};
 
-        const sidebar = document.querySelector('.w-80');
-        mobileMenuButton.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            if (sidebar.classList.contains('active')) {
-                gsap.to(sidebar, {
-                    duration: 0.3,
-                    x: 0,
-                    ease: 'power2.out'
-                });
-            } else {
-                gsap.to(sidebar, {
-                    duration: 0.3,
-                    x: '-100%',
-                    ease: 'power2.in'
-                });
-            }
-        });
-    }
-
-    function setupSearchBar() {
-        const searchInput = document.querySelector('input[placeholder="Search or start new chat"]');
-        if (searchInput) {
-            // Focus animation
-            searchInput.addEventListener('focus', () => {
-                gsap.to(searchInput, {
-                    duration: 0.2,
-                    scale: 1.02,
-                    ease: 'power2.out'
-                });
-            });
-
-            searchInput.addEventListener('blur', () => {
-                gsap.to(searchInput, {
-                    duration: 0.2,
-                    scale: 1,
-                    ease: 'power2.in'
-                });
-            });
-
-            // Search animation
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                // Add your search logic here
-                console.log('Searching for:', searchTerm);
-            });
-        }
-    }
-
-    function updateChatHeader(chatItem) {
-        const header = document.querySelector('.bg-[#1e88e5]');
-        const userAvatar = chatItem.querySelector('img').src;
-        const userName = chatItem.querySelector('h3').textContent;
-        const isOnline = chatItem.querySelector('.bg-green-500') !== null;
-
-        // Animate header update
-        gsap.to(header, {
-            duration: 0.3,
-            opacity: 0,
-            onComplete: () => {
-                header.innerHTML = `
-                    <div class="flex items-center space-x-4">
-                        <img src="${userAvatar}" alt="avatar" class="w-10 h-10 rounded-full">
-                        <div>
-                            <h2 class="text-white font-semibold">${userName}</h2>
-                            <p class="text-sm ${isOnline ? 'text-green-300' : 'text-blue-100'}">${isOnline ? 'online' : 'offline'}</p>
-                        </div>
-                    </div>
-                    <div class="flex space-x-6">
-                        <button class="text-white hover:text-blue-100 transition-colors">
-                            <i class="fas fa-search text-xl"></i>
-                        </button>
-                        <button class="text-white hover:text-blue-100 transition-colors">
-                            <i class="fas fa-phone-alt text-xl"></i>
-                        </button>
-                        <button class="text-white hover:text-blue-100 transition-colors">
-                            <i class="fas fa-video text-xl"></i>
-                        </button>
-                        <button class="text-white hover:text-blue-100 transition-colors">
-                            <i class="fas fa-info-circle text-xl"></i>
-                        </button>
-                    </div>
-                `;
-                gsap.to(header, {
-                    duration: 0.3,
-                    opacity: 1
-                });
-            }
-        });
-    }
-
-    // Initialize UI after splash screen
-    setTimeout(initializeUI, 2000);
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        const sidebar = document.querySelector('.w-80');
-        if (window.innerWidth > 768) {
-            sidebar.classList.remove('active');
-            gsap.to(sidebar, {
-                duration: 0.3,
-                x: 0,
-                ease: 'power2.out'
-            });
-        }
-    });
+// Initialize the chat list functionality
+document.addEventListener("DOMContentLoaded", () => {
+  checkLogin(); // it will call setProfile safely inside
+  logout();
+  displayChatlistItem();
 });

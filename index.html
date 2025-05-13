@@ -7,11 +7,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in {
+            animation: fadeIn 1s ease-in forwards;
+        }
+        .fade-out {
+            animation: fadeOut 1s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="bg-[#1e88e5] h-screen font-sans">
-    <div class="flex h-screen">
+    <!-- Opening Animation -->
+    <div id="opening-animation" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1e88e5]">
+        <div class="flex flex-col items-center gap-6">
+            <div class="w-20 h-20 flex items-center justify-center rounded-full bg-white shadow-lg relative">
+                <span class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-comments text-[#1e88e5] text-4xl"></i>
+                </span>
+                <span class="absolute w-full h-full border-4 border-[#1e88e5]/30 border-t-[#1e88e5] rounded-full spin"></span>
+            </div>
+            <span class="text-white text-3xl font-extrabold tracking-wider fade-in">Shano Chat</span>
+            <span class="text-white text-base opacity-70 fade-in" style="animation-delay:0.5s;">Connecting you to conversations...</span>
+        </div>
+    </div>
+    <div id="main-ui" class="flex h-screen hidden opacity-0">
         <!-- Sidebar -->
-        <aside class="w-80 bg-white/90 flex flex-col border-r border-[#1e88e5]/30">
+        <aside id="sidebar" class="flex flex-col w-full sm:w-80 bg-white/90 border-r border-[#1e88e5]/30 z-50 h-full">
             <!-- Logo Branding -->
             <div class="flex flex-col items-center justify-center h-20 py-2 mt-4 border-b border-gray-200">
                 <div class="w-16 h-16 flex items-center justify-center rounded-full bg-[#1e88e5] shadow">
@@ -22,9 +57,12 @@
             <!-- Logo/Profile -->
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
                 <div class="flex items-center gap-3">
-                    <img src="https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff" class="w-10 h-10 rounded-full">
-                    <span class="font-semibold text-gray-800">You</span>
+                    <img id="profileImageDisplay" src="https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff" class="w-10 h-10 rounded-full">
+                 <div id="profileNameDisplay" class="font-semibold text-gray-800 text-xs py-2">You</div>
+
+<div id="NumberOfUser" class="font-semibold text-gray-500 text-xs relative top-6 right-16">+9766636377474</div>
                 </div>
+
                 <div class="flex gap-2">
                     <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-circle-notch text-gray-500"></i></button>
                     <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-comment-alt text-gray-500"></i></button>
@@ -34,62 +72,58 @@
             <!-- Search -->
             <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
                 <div class="relative">
-                    <input type="text" placeholder="Search or start new chat" class="w-full pl-10 pr-3 py-2 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400">
+                    <input type="text" id="searchChat" placeholder="Search or start new chat" class="w-full pl-10 pr-3 py-2 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                 </div>
             </div>
             <!-- Chat List -->
-            <div class="flex-1 overflow-y-auto bg-white/90">
+            <div class="flex-1 overflow-y-auto bg-white/90" id="chat-list">
                 <div class="divide-y divide-gray-100">
                     <!-- Chat Item Example -->
-                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer group">
-                        <div class="relative mr-4">
-                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=random" alt="Avatar" class="w-12 h-12 rounded-full">
-                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-center">
-                                <h4 class="text-gray-900 font-semibold truncate">John Doe</h4>
-                                <span class="text-xs text-gray-400">10:30 AM</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm text-gray-600">
-                                <p class="truncate">Hey, how are you?</p>
-                                <span class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full ml-2">2</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer group">
-                        <div class="relative mr-4">
-                            <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=random" alt="Avatar" class="w-12 h-12 rounded-full">
-                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 border-2 border-white rounded-full"></span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-center">
-                                <h4 class="text-gray-900 font-semibold truncate">Sarah Smith</h4>
-                                <span class="text-xs text-gray-400">9:45 AM</span>
-                            </div>
-                            <p class="text-sm text-gray-600 truncate">Can we meet tomorrow?</p>
-                        </div>
-                    </div>
+                    
+                  
                 </div>
             </div>
         </aside>
         <!-- Main Chat Area -->
-        <main class="flex-1 flex flex-col bg-[#e3f2fd]">
+        <main id="chatArea" class="hidden sm:flex flex-1 flex-col bg-[#e3f2fd] w-full h-full">
             <!-- Chat Header -->
-            <header class="bg-[#1e88e5] px-6 py-3 flex items-center justify-between border-b border-[#1976d2] shadow-sm text-white">
-                <div class="flex items-center gap-4">
+             
+            <header class="bg-[#1e88e5] px-6 py-3 flex items-center justify-between border-b border-[#1976d2] shadow-sm text-white relative">
+                <!-- Back Button for mobile only -->
+                <button id="backButton" class="sm:hidden text-white mr-4">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <div id="headerMain" class="flex items-center gap-4 flex-1 min-w-0">
                     <img src="https://ui-avatars.com/api/?name=John+Doe&background=random" alt="avatar" class="w-10 h-10 rounded-full">
-                    <div>
-                        <h2 class="font-semibold text-white">John Doe</h2>
-                        <p class="text-xs text-blue-100">online</p>
+                    <div class="truncate">
+                        <h2 class="font-semibold text-white truncate">John Doe</h2>
+                        <p class="text-xs text-blue-100 truncate">online</p>
                     </div>
                 </div>
-                <div class="flex gap-4">
-                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-search text-white text-lg"></i></button>
+                <!-- Search input, hidden by default -->
+                <div id="headerSearch" class="hidden flex-1 min-w-0">
+                    <input id="searchInput" type="text" placeholder="Search..." class="w-full px-4 py-2 rounded bg-white text-[#1e88e5] placeholder-[#1e88e5]/60 focus:outline-none" />
+                </div>
+                <!-- Search icon always in header -->
+                <button id="searchIcon" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition">
+                    <i class="fas fa-search text-white text-lg"></i>
+                </button>
+                <!-- Hamburger menu for small screens -->
+                <button id="menuToggle" class="sm:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition">
+                    <i class="fas fa-bars text-white text-lg"></i>
+                </button>
+                <!-- Header icons for sm+ screens (except search, upload doc) -->
+                <div class="hidden sm:flex gap-4">
                     <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-phone-alt text-white text-lg"></i></button>
                     <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-video text-white text-lg"></i></button>
                     <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-info-circle text-white text-lg"></i></button>
+                </div>
+                <!-- Dropdown menu for small screens (no search, no upload doc) -->
+                <div id="menuDropdown" class="absolute right-4 top-16 bg-white rounded shadow-lg p-2 flex-col gap-2 z-50 hidden sm:hidden">
+                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-100 transition"><i class="fas fa-phone-alt text-[#1e88e5] text-lg"></i></button>
+                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-100 transition"><i class="fas fa-video text-[#1e88e5] text-lg"></i></button>
+                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-100 transition"><i class="fas fa-info-circle text-[#1e88e5] text-lg"></i></button>
                 </div>
             </header>
             <!-- Messages Area -->
@@ -108,13 +142,76 @@
             <footer class="bg-white/90 px-6 py-4 border-t border-[#1e88e5]/20">
                 <div class="flex items-center gap-4">
                     <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="far fa-smile text-2xl"></i></button>
-                    <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="fas fa-paperclip text-2xl"></i></button>
+                    <!-- Upload doc button always next to input -->
+                    <button id="docUploadBtn" class="text-[#1e88e5] hover:text-blue-700 transition"><i class="fas fa-paperclip text-2xl"></i></button>
+                    <input type="file" id="docUploadInput" class="hidden" />
                     <input type="text" placeholder="Type a message" class="flex-1 bg-blue-50 py-2 px-4 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1e88e5] text-blue-900 placeholder-blue-400">
                     <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="fas fa-microphone text-2xl"></i></button>
                 </div>
             </footer>
         </main>
+        <!-- No Chat Selected Screen -->
+
+
     </div>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/app.js"></script>
+    <script>
+        // Opening animation logic
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.getElementById('opening-animation').classList.add('fade-out');
+                setTimeout(function() {
+                    document.getElementById('opening-animation').style.display = 'none';
+                    const mainUI = document.getElementById('main-ui');
+                    mainUI.classList.remove('hidden');
+                    mainUI.classList.add('fade-in');
+                    setTimeout(() => mainUI.classList.remove('opacity-0'), 100);
+                }, 1000);
+            }, 3000);
+        });
+
+        // WhatsApp Web style: On sm+ both visible, on mobile only one at a time
+        const sidebar = document.getElementById('sidebar');
+        const chatArea = document.getElementById('chatArea');
+        const backButton = document.getElementById('backButton');
+        let mobileView = 'sidebar'; // 'sidebar' or 'chat'
+        function updateLayout() {
+            if (window.innerWidth < 640) {
+                // Mobile: show according to mobileView
+                if (mobileView === 'sidebar') {
+                    sidebar.classList.remove('hidden');
+                    chatArea.classList.add('hidden');
+                } else {
+                    sidebar.classList.add('hidden');
+                    chatArea.classList.remove('hidden');
+                    chatArea.classList.add('block');
+                    chatArea.classList.remove('flex');
+                }
+            } else {
+                // sm+ (>=640px): both visible
+                sidebar.classList.remove('hidden');
+                chatArea.classList.remove('hidden');
+                chatArea.classList.add('flex');
+            }
+        }
+        updateLayout();
+        window.addEventListener('resize', updateLayout);
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth < 640) {
+                    mobileView = 'chat';
+                    updateLayout();
+                }
+            });
+        });
+        backButton.addEventListener('click', () => {
+            if (window.innerWidth < 640) {
+                mobileView = 'sidebar';
+                updateLayout();
+            }
+        });
+    </script>
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
