@@ -6,9 +6,10 @@ import {
   collection,
   serverTimestamp,   // ✅ Keep this one only
   addDoc,
+  collectionGroup,
   orderBy,
   onSnapshot,
-  setDoc,getDoc,updateDoc,where,query,getDocs
+  setDoc,getDoc,updateDoc,where,query,getDocs,  arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import { getStorage, ref, 
@@ -18,8 +19,7 @@ import { getAuth, onAuthStateChanged,createUserWithEmailAndPassword,signInWithEm
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    // TODO: Replace with your Firebase config
-    
+   
 };
 
 // Initialize Firebase
@@ -42,6 +42,8 @@ export {
   getDoc,
   updateDoc,
   serverTimestamp,
+    arrayUnion,
+    collectionGroup,
   where,
   query,
   getDocs,

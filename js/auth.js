@@ -1,151 +1,122 @@
 import {
+  auth,
+  db,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
-  auth,
   signInWithEmailAndPassword,
   signInWithPopup,
   googleProvider,
   doc,
   setDoc,
-  db,
-  serverTimestamp  // ✅ Add this
+  serverTimestamp
 } from "./firebase-config.js";
 
-import{checkLogin} from"./app.js"
-document.addEventListener("DOMContentLoaded",()=>{
+import { checkLogin } from "./app.js";
 
-checkLogin()
+document.addEventListener("DOMContentLoaded", () => {
+  checkLogin();
 
-let signUp=false;
+  const loginForm = document.getElementById("loginForm");
+  const signupForm = document.getElementById("signupForm");
+  const showSignup = document.getElementById("showSignup");
+  const showLogin = document.getElementById("showLogin");
+  const googleLogin = document.getElementById("googleLogin");
 
-  // Toggle between login and signup forms
-const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
-const showSignup = document.getElementById('showSignup');
-const showLogin = document.getElementById('showLogin');
-
-if (showSignup) {
-  showSignup.addEventListener('click', (e) => {
+  // 🔄 Toggle Forms
+  showSignup?.addEventListener("click", e => {
     e.preventDefault();
-    loginForm.classList.add('hidden');
-    signupForm.classList.remove('hidden');
+    loginForm?.classList.add("hidden");
+    signupForm?.classList.remove("hidden");
   });
-}
 
-if (showLogin) {
-  showLogin.addEventListener('click', (e) => {
+  showLogin?.addEventListener("click", e => {
     e.preventDefault();
-    signupForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
+    signupForm?.classList.add("hidden");
+    loginForm?.classList.remove("hidden");
   });
-}
 
-// Handle login form submit
-if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
+  // 🔐 Handle Login
+  loginForm?.addEventListener("submit", async e => {
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
-    if (!email || !password) {
-      alert('Please enter email and password');
-      return;
-    }
-
- try {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  alert("Login successful!");
-
-  localStorage.setItem("login", JSON.stringify(true)); // ✅
-  window.location.href = "index.html"; // ✅
-} catch (error) {
-  alert("Login failed: " + error.message);
-}
-
-  });
-}
-
-
-
-
-
-
-
-// ✅ Handle signup form submit with async function
-if (signupForm) {
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-    const phoneNumber=new Date().getTime()
-    if (!name || !email || !password) {
-      alert('Please fill in all fields');
-      return;
-    }
+    if (!email || !password) return alert("Please enter email and password");
 
     try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-const user = userCredential.user;
-
-await setDoc(doc(db, "users", user.uid), {
-  uid: user.uid,
-  name: name, // from form input
-  email: user.email,
-  image: user.photoURL || "", // password-based users usually don’t have image
-  createdAt: serverTimestamp(),
-  phoneNumber,
-});
-
-
-alert("Signup successful!");
-// ❌ DON'T REDIRECT HERE
-// ✅ Just show message
-
-    } catch (error) {;
-      if (error.code === 'auth/email-already-in-use') {
-        alert("Email already in use. Please login instead.");
-      } else {
-        alert("Signup failed: " + error.message);
-      }
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      alert(`Welcome back, ${user.email}`);
+      localStorage.setItem("login", JSON.stringify(true));
+      window.location.href = "index.html";
+    } catch (err) {
+      alert("Login failed: " + err.message);
     }
   });
-}
 
-// Google login button
-const googleLogin = document.getElementById('googleLogin');
-if (googleLogin) {
-googleLogin.addEventListener('click', async (e) => {
+  // 📝 Handle Signup
+ signupForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
- try {
-  const result = await signInWithPopup(auth, googleProvider);
-const user = result.user;
-const phoneNumber=new Date().getTime()
-await setDoc(doc(db, "users", user.uid), {
-  uid: user.uid,
-  name: user.displayName,
-  email: user.email,
-  image: user.photoURL, // ✅ fetched directly from user object
-  createdAt: serverTimestamp(),
-  phoneNumber,
 
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const rawNumber = document.getElementById("userContactNumber").value.trim();
+  const password = document.getElementById("signupPassword").value.trim();
+
+  const userphone = rawNumber.replace(/\D/g, ""); // Remove non-digit chars
+
+  if (!name || !email || !password || !userphone) {
+    alert("Please fill in all fields correctly.");
+    return;
+  }
+
+  try {
+    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      name,
+      email,
+      image: user.photoURL || "",
+      userphone,
+      createdAt: serverTimestamp(),
+    });
+
+    alert("✅ Signup successful! Data stored in Firestore.");
+    // Optional: Switch UI to login form or redirect to login
+  } catch (err) {
+    console.error("❌ Firebase error:", err);
+
+    if (err.code === "auth/email-already-in-use") {
+      alert("⚠️ Email already in use. Please login instead.");
+    } else {
+      alert("Signup failed: " + err.message);
+    }
+  }
 });
 
 
-  alert("Google login successful!");
-  localStorage.setItem("login", JSON.stringify(true)); // ✅
-  window.location.href = "index.html"; // ✅
-} catch (error) {
-  alert("Google login failed: " + error.message);
-}
+  // 🔗 Google Login
+  googleLogin?.addEventListener("click", async e => {
+    e.preventDefault();
+    try {
+      const { user } = await signInWithPopup(auth, googleProvider);
 
+      const generatedNumber = new Date().getTime(); // fallback phone-like unique value
+
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        image: user.photoURL || "",
+        createdAt: serverTimestamp(),
+        userphone: generatedNumber.toString
+      });
+
+      alert("Google login successful!");
+      localStorage.setItem("login", JSON.stringify(true));
+      window.location.href = "index.html";
+    } catch (err) {
+      alert("Google login failed: " + err.message);
+    }
+  });
 });
-
-}
-
-})
-
-// Toggle between login and signup forms
-

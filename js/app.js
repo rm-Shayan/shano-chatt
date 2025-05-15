@@ -9,7 +9,10 @@ export const checkLogin = () => {
         window.location.href = "index.html";
       } else {
         console.log("User is logged in and on home page");
-        setProfile(); // ✅ Safe to call here
+   
+
+        fetchDataOfContactListFromDB(user)
+        profile(); // ✅ Safe to call here
       }
     } else {
       if (window.location.pathname !== "/auth.html") {
@@ -30,7 +33,7 @@ const logout = () => {
   });
 };
 
-const setProfile = async (updatedName = null, updatedImage = null) => {
+const profile = async () => {
   const user = auth.currentUser;
   if (!user) {
     console.log("User not logged in");
@@ -38,21 +41,6 @@ const setProfile = async (updatedName = null, updatedImage = null) => {
   }
 
   const docRef = doc(db, "users", user.uid);
-
-  // 1️⃣ If update values are provided → update Firestore
-  if (updatedName || updatedImage) {
-    const updates = {};
-    if (updatedName) updates.name = updatedName;
-    if (updatedImage) updates.image = updatedImage;
-
-    try {
-      await updateDoc(docRef, updates);
-      console.log("Profile updated successfully!");
-    } catch (err) {
-      console.error("Error updating profile:", err);
-    }
-  }
-
   // 2️⃣ Always get and display updated data
   try {
     const docSnap = await getDoc(docRef);
@@ -61,7 +49,7 @@ const setProfile = async (updatedName = null, updatedImage = null) => {
       document.getElementById("profileNameDisplay").innerText = `${data.name.trim()}...` || "You";
       document.getElementById("profileImageDisplay").src =
         data.image || `https://ui-avatars.com/api/?name=${data.name || "You"}&background=0D8ABC&color=fff`;
-      document.getElementById("NumberOfUser").innerHTML = data.phoneNumber;
+      document.getElementById("NumberOfUser").innerHTML = data.userphone;
     } else {
       console.warn("User document does not exist");
     }
@@ -70,87 +58,156 @@ const setProfile = async (updatedName = null, updatedImage = null) => {
   }
 };
 
-const displayChatlistItem = () => {
-  const chatlist = document.getElementById("chat-list");
-  const searchInputOfChat = document.getElementById("searchChat");
 
-  searchInputOfChat.addEventListener("keyup", async () => {
-    const searchValue = searchInputOfChat.value.toLowerCase().trim();
-    chatlist.innerHTML = "";
 
-    if (!searchValue) return;
-
-    const usersRef = collection(db, "users");
-
-    try {
-      const phoneQuery = query(usersRef, where("phoneNumber", "==", searchValue));
-      const phoneSnapshot = await getDocs(phoneQuery);
-
-      const nameQuery = query(
-        usersRef,
-        where("name", ">=", searchValue),
-        where("name", "<=", searchValue + "\uf8ff")
-      );
-      const nameSnapshot = await getDocs(nameQuery);
-
-      const results = new Set();
-
-      phoneSnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        if (!results.has(docSnap.id)) {
-          results.add(docSnap.id);
-          const chatItem = createChatItem(data.name, data.phoneNumber, data.lastMessage, data.timestamp);
-          chatlist.appendChild(chatItem);
-        }
-      });
-
-      nameSnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        if (!results.has(docSnap.id)) {
-          results.add(docSnap.id);
-          const chatItem = createChatItem(data.name, data.phoneNumber, data.lastMessage, data.timestamp);
-          chatlist.appendChild(chatItem);
-        }
-      });
-
-      if (results.size === 0) {
-        chatlist.innerHTML = "<p class='text-gray-500 px-4 py-2'>No users found.</p>";
-      }
-
-    } catch (err) {
-      console.error("❌ Error searching users:", err);
-    }
-  });
-};
 
 
 // Function to create a chat item element
-const createChatItem = (name, phoneNumber, lastMessage, timestamp) => {
-  const chatItem = document.createElement("div");
-  chatItem.classList.add("chat-item", "flex", "items-center", "px-4", "py-3", "hover:bg-gray-50", "cursor-pointer", "group");
 
-  chatItem.innerHTML = `
-    <div class="relative mr-4">
-      <img src="https://ui-avatars.com/api/?name=${name.replace(" ", "+")}&background=random" alt="Avatar" class="w-12 h-12 rounded-full">
-      <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-    </div>
-    <div class="flex-1 min-w-0">
-      <div class="flex justify-between items-center">
-        <h4 class="text-gray-900 font-semibold truncate">${name}</h4>
-        <span class="text-xs text-gray-400">${timestamp}</span>
-      </div>
-      <div class="flex justify-between items-center text-sm text-gray-600">
-        <p class="truncate">${lastMessage}</p>
-      </div>
-    </div>
-  `;
+const fetchDataOfContactListFromDB = async (user) => {
+  let contacts = JSON.parse(localStorage.getItem("contacts") || "[]");
+  let groups   = JSON.parse(localStorage.getItem("Groups")   || "[]");
 
-  return chatItem;
+  try {
+    // Fetch Contacts
+    const contactSnapshot = await getDocs(
+      collection(db, "users", user.uid, "userContacts")
+    );
+    contacts = [];
+    contactSnapshot.forEach((docSnap) => {
+      contacts.push(docSnap.data());
+    });
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+    console.log("Contacts:", contacts);
+  } catch (err) {
+    console.error("Error fetching contacts:", err);
+  }
+
+  try {
+    // Fetch Groups
+    const groupSnapshot = await getDocs(
+      collection(db, "users", user.uid, "userGroups")
+    );
+    groups = [];
+    groupSnapshot.forEach((docSnap) => {
+      groups.push(docSnap.data());
+    });
+    localStorage.setItem("Groups", JSON.stringify(groups));
+    console.log("Groups:", groups);
+  } catch (err) {
+    console.error("Error fetching groups:", err);
+  }
+
+  // Render to UI
+  renderChatList(contacts, groups);
 };
+
+
+const renderChatList = async (contacts, groups) => {
+  const chatlist = document.getElementById("chat-list");
+  if (!chatlist) return;
+
+  // For contacts, fetch images by phone number
+  let contactItems = "";
+
+  if (contacts.length > 0) {
+    // Fetch all images in parallel
+    const contactsWithImages = await Promise.all(
+      contacts.map(async c => {
+        const imageUrl = await getUserImageByPhoneNumber(c.contactNumber);
+        return {...c, image: imageUrl};
+      })
+    );
+
+    contactItems = contactsWithImages.map(c => `
+      <li class="flex items-center justify-between gap-4 p-4 bg-white rounded-xl shadow hover:bg-gray-50 transition">
+        <div class="flex items-center gap-3">
+          ${
+            c.image
+              ? `<img src="${c.image}" alt="${c.contactName}" class="w-10 h-10 rounded-full object-cover" />`
+              : `<div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold uppercase">
+                   ${c.contactName?.charAt(0) || "?"}
+                 </div>`
+          }
+          <div>
+            <p class="text-sm font-semibold text-gray-800">${c.contactName || "نام نہیں"}</p>
+            <p class="text-xs text-gray-500">${c.contactNumber || "نمبر نہیں"}</p>
+          </div>
+        </div>
+      </li>
+    `).join("");
+  }
+
+  // Groups rendering same as before
+  let groupItems = "";
+  if (groups.length > 0) {
+    groupItems = groups.map(g => `
+      <li class="flex items-center justify-between gap-4 p-4 bg-green-50 rounded-xl shadow hover:bg-green-100 transition">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-green-400 text-white rounded-full flex items-center justify-center font-bold uppercase">
+            ${g.contactName?.charAt(0) || "G"}
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-green-700">${g.contactName || "گروپ"}</p>
+            <p class="text-xs text-green-600">گروپ چیٹ</p>
+          </div>
+        </div>
+      </li>
+    `).join("");
+  }
+
+contactItems.addEventListener('click',openChat)
+groupItems.addEventListener('click',openChat)
+
+  chatlist.innerHTML = contactItems + groupItems;
+};
+
+
+
+
+const getUserImageByPhoneNumber = async (targetNumber) => {
+  try {
+    // Step 1: Query the users collection to find matching phone number
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("userphone", "==", targetNumber));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      // No match found → return default avatar
+      return "https://ui-avatars.com/api/?name=Unknown&background=ccc&color=fff";
+    }
+
+    // Step 2: Get the first matched document
+    const userDoc = snapshot.docs[0];
+    const userData = userDoc.data();
+
+    // Step 3: Validate image URL (check if it’s NOT a blob or empty)
+    const userImg = userData.image;
+    if (
+      !userImg || 
+      userImg.startsWith("blob:") || 
+      !userImg.startsWith("http")
+    ) {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || "User")}&background=0D8ABC&color=fff`;
+    }
+
+    return userImg;
+  } catch (error) {
+    console.error("🔥 Error getting user image:", error);
+    return "https://ui-avatars.com/api/?name=Error&background=ff0000&color=fff";
+  }
+};
+
+const openChat = async (e) =>{
+  e.preventDefault();
+  const chat
+}
+
 
 // Initialize the chat list functionality
 document.addEventListener("DOMContentLoaded", () => {
   checkLogin(); // it will call setProfile safely inside
   logout();
-  displayChatlistItem();
+  // displayChatlistItem();
+  
 });

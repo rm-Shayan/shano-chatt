@@ -6,6 +6,7 @@
     <title>Shano Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+   
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .fade-in {
@@ -32,7 +33,7 @@
 </head>
 <body class="bg-[#1e88e5] h-screen font-sans">
     <!-- Opening Animation -->
-    <div id="opening-animation" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1e88e5]">
+    <div id="opening-animation" class=" fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1e88e5]">
         <div class="flex flex-col items-center gap-6">
             <div class="w-20 h-20 flex items-center justify-center rounded-full bg-white shadow-lg relative">
                 <span class="absolute inset-0 flex items-center justify-center">
@@ -55,20 +56,55 @@
                 <span class="mt-2 font-bold text-lg text-[#1e88e5] tracking-wide">Shano Chat</span>
             </div>
             <!-- Logo/Profile -->
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-                <div class="flex items-center gap-3">
-                    <img id="profileImageDisplay" src="https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff" class="w-10 h-10 rounded-full">
-                 <div id="profileNameDisplay" class="font-semibold text-gray-800 text-xs py-2">You</div>
+           <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+  <!-- Left: Profile Image + Info -->
+  <div class="flex items-center gap-3 w-full">
+    <!-- Profile Image -->
+    <img id="profileImageDisplay"
+      src="https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff"
+      class="w-10 h-10 rounded-full shrink-0" />
 
-<div id="NumberOfUser" class="font-semibold text-gray-500 text-xs relative top-6 right-16">+9766636377474</div>
-                </div>
+    <!-- Name + Number -->
+    <div class="flex flex-col w-full min-w-0">
+      <div id="profileNameDisplay"
+        class="font-semibold text-gray-800 text-sm truncate w-full">
+        You
+      </div>
+      <div id="NumberOfUser"
+        class="font-semibold text-gray-500 text-xs break-words w-full">
+        +9766636377474
+      </div>
+    </div>
+  </div>
 
-                <div class="flex gap-2">
-                    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-circle-notch text-gray-500"></i></button>
-                    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-comment-alt text-gray-500"></i></button>
-                    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition"><i class="fas fa-ellipsis-v text-gray-500"></i></button>
-                </div>
-            </div>
+  <!-- Right: Icons -->
+  <div class="flex gap-2 ml-4 shrink-0">
+    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+      <i class="fas fa-circle-notch text-gray-500"></i>
+    </button>
+    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+      <i class="fas fa-comment-alt text-gray-500"></i>
+    </button>
+    <button id="btn-of-toggle"
+      class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+      <i class="fas fa-ellipsis-v text-gray-500"></i>
+    </button>
+  </div>
+</div>
+
+<div id="containerOfThings" class="hidden absolute top-40 left-28 z-50 w-40 bg-white border border-gray-300 rounded-lg shadow-lg p-2 space-y-2">
+ <div class="flex justify-end"> <span class="text-xl cursor-pointer" id="cutToggle">&times;</span></div>
+    <div class="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm font-medium text-gray-700">
+    Add New Contact
+  </div>
+  <div class="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm font-medium text-gray-700">
+    Add New Group
+  </div>
+  <div class="px-4 py-2 hover:bg-gray-100 rounded-md cursor-pointer text-sm font-medium text-gray-700">
+    Settings
+  </div>
+</div>
+
             <!-- Search -->
             <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
                 <div class="relative">
@@ -154,65 +190,16 @@
 
 
     </div>
+
+
+
+    
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/app.js"></script>
-    <script>
-        // Opening animation logic
-        window.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                document.getElementById('opening-animation').classList.add('fade-out');
-                setTimeout(function() {
-                    document.getElementById('opening-animation').style.display = 'none';
-                    const mainUI = document.getElementById('main-ui');
-                    mainUI.classList.remove('hidden');
-                    mainUI.classList.add('fade-in');
-                    setTimeout(() => mainUI.classList.remove('opacity-0'), 100);
-                }, 1000);
-            }, 3000);
-        });
-
-        // WhatsApp Web style: On sm+ both visible, on mobile only one at a time
-        const sidebar = document.getElementById('sidebar');
-        const chatArea = document.getElementById('chatArea');
-        const backButton = document.getElementById('backButton');
-        let mobileView = 'sidebar'; // 'sidebar' or 'chat'
-        function updateLayout() {
-            if (window.innerWidth < 640) {
-                // Mobile: show according to mobileView
-                if (mobileView === 'sidebar') {
-                    sidebar.classList.remove('hidden');
-                    chatArea.classList.add('hidden');
-                } else {
-                    sidebar.classList.add('hidden');
-                    chatArea.classList.remove('hidden');
-                    chatArea.classList.add('block');
-                    chatArea.classList.remove('flex');
-                }
-            } else {
-                // sm+ (>=640px): both visible
-                sidebar.classList.remove('hidden');
-                chatArea.classList.remove('hidden');
-                chatArea.classList.add('flex');
-            }
-        }
-        updateLayout();
-        window.addEventListener('resize', updateLayout);
-        document.querySelectorAll('.chat-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth < 640) {
-                    mobileView = 'chat';
-                    updateLayout();
-                }
-            });
-        });
-        backButton.addEventListener('click', () => {
-            if (window.innerWidth < 640) {
-                mobileView = 'sidebar';
-                updateLayout();
-            }
-        });
+    <script src='js/ui.js'>  
     </script>
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/app.js"></script>
+    
 </body>
 </html>
