@@ -11,16 +11,38 @@ import {
   serverTimestamp
 } from "./firebase-config.js";
 
-import { checkLogin } from "./app.js";
+
+const checkLogin=()=>{
+   onAuthStateChanged(auth, (user) => {
+      const isLoggedIn = JSON.parse(localStorage.getItem("login"));
+  
+      if (user && isLoggedIn) {
+        if (window.location.pathname !== "/index.html") {
+          window.location.href = "index.html";
+        } 
+        else {
+        }
+      } else {
+        if (window.location.pathname !== "/auth.html") {
+          window.location.href = "auth.html";
+        } else {
+          console.log("User is not logged in and is on login/signup page");
+        }
+      }
+    });
+}
 
 document.addEventListener("DOMContentLoaded", () => {
-  checkLogin();
+ 
 
   const loginForm = document.getElementById("loginForm");
   const signupForm = document.getElementById("signupForm");
   const showSignup = document.getElementById("showSignup");
   const showLogin = document.getElementById("showLogin");
   const googleLogin = document.getElementById("googleLogin");
+ const loader=document.getElementById('loader')
+
+  
 
   // 🔄 Toggle Forms
   showSignup?.addEventListener("click", e => {
@@ -35,9 +57,11 @@ document.addEventListener("DOMContentLoaded", () => {
     loginForm?.classList.remove("hidden");
   });
 
+ 
   // 🔐 Handle Login
   loginForm?.addEventListener("submit", async e => {
     e.preventDefault();
+    loader.classList.remove('hidden')
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
@@ -47,16 +71,21 @@ document.addEventListener("DOMContentLoaded", () => {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
       alert(`Welcome back, ${user.email}`);
       localStorage.setItem("login", JSON.stringify(true));
+  
+      loader.classList.add('hidden')
+   
+
       window.location.href = "index.html";
     } catch (err) {
       alert("Login failed: " + err.message);
+     loader.classList.add('hidden')
     }
   });
 
   // 📝 Handle Signup
  signupForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
-
+loader.classList.remove('hidden')
   const name = document.getElementById("signupName").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
   const rawNumber = document.getElementById("userContactNumber").value.trim();
@@ -66,10 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!name || !email || !password || !userphone) {
     alert("Please fill in all fields correctly.");
+    loader.classList.remove('hidden')
     return;
   }
 
   try {
+
+
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
     await setDoc(doc(db, "users", user.uid), {
@@ -82,14 +114,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     alert("✅ Signup successful! Data stored in Firestore.");
+    loader?.classList.add('hidden')
+   signupForm?.classList.add("hidden");
+    loginForm?.classList.remove("hidden");
     // Optional: Switch UI to login form or redirect to login
   } catch (err) {
     console.error("❌ Firebase error:", err);
 
     if (err.code === "auth/email-already-in-use") {
       alert("⚠️ Email already in use. Please login instead.");
+      loader.classList.add('hidden')
     } else {
       alert("Signup failed: " + err.message);
+      loader.classList.add('hidden')
     }
   }
 });
@@ -103,14 +140,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const generatedNumber = new Date().getTime(); // fallback phone-like unique value
 
-      await setDoc(doc(db, "users", user.uid), {
+      loader.classList.remove('hidden')
+   try{
+       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         name: user.displayName,
         email: user.email,
         image: user.photoURL || "",
         createdAt: serverTimestamp(),
-        userphone: generatedNumber.toString
+        userphone: generatedNumber.toString()
       });
+   }catch(err){
+    console.error("❌ Firestore error:", err);
+   }
+   loader.classList.add('hidden')
 
       alert("Google login successful!");
       localStorage.setItem("login", JSON.stringify(true));

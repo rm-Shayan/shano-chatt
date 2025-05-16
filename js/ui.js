@@ -46,7 +46,7 @@
                 }
             });
         });
-        backButton.addEventListener('click', () => {
+        backButton?.addEventListener('click', () => {
             if (window.innerWidth < 640) {
                 mobileView = 'sidebar';
                 updateLayout();

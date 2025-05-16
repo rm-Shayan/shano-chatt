@@ -67,7 +67,7 @@
     <!-- Name + Number -->
     <div class="flex flex-col w-full min-w-0">
       <div id="profileNameDisplay"
-        class="font-semibold text-gray-800 text-sm truncate w-full">
+        class="font-semibold text-gray-800 text-sm truncate w-full break-normal">
         You
       </div>
       <div id="NumberOfUser"
@@ -78,15 +78,15 @@
   </div>
 
   <!-- Right: Icons -->
-  <div class="flex gap-2 ml-4 shrink-0">
-    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+  <div class="flex  gap-1 ml-2 shrink-0">
+    <button class="w-8 h-8 flex items-center flex-start rounded-full hover:bg-gray-100 transition">
       <i class="fas fa-circle-notch text-gray-500"></i>
     </button>
-    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+    <button class="w-8 h-8 flex items-center flex-start rounded-full hover:bg-gray-100 transition">
       <i class="fas fa-comment-alt text-gray-500"></i>
     </button>
     <button id="btn-of-toggle"
-      class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+      class="w-8 h-8 flex items-center flex-start rounded-full hover:bg-gray-100 transition">
       <i class="fas fa-ellipsis-v text-gray-500"></i>
     </button>
   </div>
@@ -122,70 +122,48 @@
             </div>
         </aside>
         <!-- Main Chat Area -->
-        <main id="chatArea" class="hidden sm:flex flex-1 flex-col bg-[#e3f2fd] w-full h-full">
-            <!-- Chat Header -->
-             
-            <header class="bg-[#1e88e5] px-6 py-3 flex items-center justify-between border-b border-[#1976d2] shadow-sm text-white relative">
-                <!-- Back Button for mobile only -->
-                <button id="backButton" class="sm:hidden text-white mr-4">
-                    <i class="fas fa-arrow-left text-xl"></i>
-                </button>
-                <div id="headerMain" class="flex items-center gap-4 flex-1 min-w-0">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=random" alt="avatar" class="w-10 h-10 rounded-full">
-                    <div class="truncate">
-                        <h2 class="font-semibold text-white truncate">John Doe</h2>
-                        <p class="text-xs text-blue-100 truncate">online</p>
-                    </div>
-                </div>
-                <!-- Search input, hidden by default -->
-                <div id="headerSearch" class="hidden flex-1 min-w-0">
-                    <input id="searchInput" type="text" placeholder="Search..." class="w-full px-4 py-2 rounded bg-white text-[#1e88e5] placeholder-[#1e88e5]/60 focus:outline-none" />
-                </div>
-                <!-- Search icon always in header -->
-                <button id="searchIcon" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition">
-                    <i class="fas fa-search text-white text-lg"></i>
-                </button>
-                <!-- Hamburger menu for small screens -->
-                <button id="menuToggle" class="sm:hidden w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition">
-                    <i class="fas fa-bars text-white text-lg"></i>
-                </button>
-                <!-- Header icons for sm+ screens (except search, upload doc) -->
-                <div class="hidden sm:flex gap-4">
-                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-phone-alt text-white text-lg"></i></button>
-                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-video text-white text-lg"></i></button>
-                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600/20 transition"><i class="fas fa-info-circle text-white text-lg"></i></button>
-                </div>
-                <!-- Dropdown menu for small screens (no search, no upload doc) -->
-                <div id="menuDropdown" class="absolute right-4 top-16 bg-white rounded shadow-lg p-2 flex-col gap-2 z-50 hidden sm:hidden">
-                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-100 transition"><i class="fas fa-phone-alt text-[#1e88e5] text-lg"></i></button>
-                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-100 transition"><i class="fas fa-video text-[#1e88e5] text-lg"></i></button>
-                    <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-100 transition"><i class="fas fa-info-circle text-[#1e88e5] text-lg"></i></button>
-                </div>
-            </header>
-            <!-- Messages Area -->
-            <section class="flex-1 overflow-y-auto px-8 py-6 space-y-4 bg-[url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png')] bg-[#e3f2fd] bg-blend-lighten">
-                <!-- Example messages -->
-                <div class="flex flex-col items-start">
-                    <div class="bg-white/90 text-[#1565c0] rounded-lg px-4 py-2 shadow mb-1 max-w-lg">Hey, how are you?</div>
-                    <span class="text-xs text-gray-400 ml-2">10:30 AM</span>
-                </div>
-                <div class="flex flex-col items-end">
-                    <div class="bg-[#1e88e5] text-white rounded-lg px-4 py-2 shadow mb-1 max-w-lg">I'm good, thanks! And you?</div>
-                    <span class="text-xs text-gray-400 mr-2">10:31 AM</span>
-                </div>
-            </section>
-            <!-- Message Input -->
-            <footer class="bg-white/90 px-6 py-4 border-t border-[#1e88e5]/20">
-                <div class="flex items-center gap-4">
-                    <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="far fa-smile text-2xl"></i></button>
-                    <!-- Upload doc button always next to input -->
-                    <button id="docUploadBtn" class="text-[#1e88e5] hover:text-blue-700 transition"><i class="fas fa-paperclip text-2xl"></i></button>
-                    <input type="file" id="docUploadInput" class="hidden" />
-                    <input type="text" placeholder="Type a message" class="flex-1 bg-blue-50 py-2 px-4 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1e88e5] text-blue-900 placeholder-blue-400">
-                    <button class="text-[#1e88e5] hover:text-blue-700 transition"><i class="fas fa-microphone text-2xl"></i></button>
-                </div>
-            </footer>
-        </main>
+   <main id="chatArea" class="hidden sm:flex flex-1 flex-col bg-[#e3f2fd] w-full h-full">
+  <!-- Chat Header -->
+  <div id="chatHeader" class="hidden items-center justify-between px-6 py-4 bg-white shadow border-b border-gray-200">
+    <!-- Left: Contact Info -->
+    <div class="flex items-center gap-4">
+      <img id="chatProfileImage" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" class="w-10 h-10 rounded-full" />
+      <div>
+        <h2 id="chatUserName" class="text-lg font-semibold text-gray-800">User Name</h2>
+        <p id="chatUserStatus" class="text-xs text-gray-500">Online</p>
+      </div>
+    </div>
+    <!-- Right: Options -->
+    <div class="flex items-center gap-4">
+      <button class="text-gray-500 hover:text-[#1e88e5]"><i class="fas fa-phone-alt"></i></button>
+      <button class="text-gray-500 hover:text-[#1e88e5]"><i class="fas fa-video"></i></button>
+      <button class="text-gray-500 hover:text-[#1e88e5]"><i class="fas fa-ellipsis-v"></i></button>
+    </div>
+  </div>
+
+  <!-- Messages Area -->
+  <div id="chatMessages" class="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+    <!-- Example message bubble -->
+    <!-- Add messages dynamically here via JavaScript -->
+  </div>
+
+  <!-- Message Input -->
+  <div id="chatInputContainer" class="hidden bg-white px-6 py-4 border-t border-gray-200 flex items-center gap-4">
+    <button class="text-gray-500 hover:text-[#1e88e5]"><i class="far fa-smile text-xl"></i></button>
+    <input id="chatInput" type="text" placeholder="Type a message" class="flex-1 py-2 px-4 border rounded-full focus:outline-none focus:ring-2 focus:ring-[#1e88e5]" />
+    <button id="sendMessage" class="text-[#1e88e5] hover:text-blue-700 text-xl"><i class="fas fa-paper-plane"></i></button>
+  </div>
+
+  <!-- No Chat Selected -->
+  <div id="noChatSelected" class="flex flex-1 items-center justify-center text-center px-10">
+    <div class="space-y-4">
+      <i class="fas fa-comments text-5xl text-[#1e88e5]"></i>
+      <h2 class="text-2xl font-bold text-gray-700">No Chat Selected</h2>
+      <p class="text-gray-500">Select a contact to start chatting. Your messages will appear here.</p>
+    </div>
+  </div>
+</main>
+
         <!-- No Chat Selected Screen -->
 
 
